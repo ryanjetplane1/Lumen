@@ -130,7 +130,7 @@ Upload the sketch via USB-C.
 |---|---|
 | No PC connection | WiFi NTP clock + date |
 | PC connected, music playing | Song name, progress bar, synth visualizer |
-| PC connected, music paused | Visualizer fades out → clock (12h) |
+| PC connected, music paused | clock (12h) + Stats |
 | Volume changed | Volume % overlay + bar for 1.5s |
 
 ---
