@@ -29,7 +29,7 @@ Lumen Mini is a pocket sized system monitor powered by USB-C that sits on your d
 
 ## Wiring
 
-All logic runs at **3.3V**. Do **not** use 5V — the ESP32-C3 SuperMini I/O is not 5V tolerant.
+All logic runs at **3.3V**. Do **not** use 5V — the Oled display cannot handle 5V.
 
 ### OLED Display (I2C)
 
