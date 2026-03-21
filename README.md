@@ -113,7 +113,7 @@ Upload the sketch via USB-C.
     - CPU / RAM via psutil
     - Media info via Windows Media Transport Controls (winrt)
     - System volume via pycaw
-  Sends a pipe-delimited packet over USB serial ~20x per second
+  Sends packets over USB serial ~20x per second
 
 [ESP32-C3 SuperMini]
   Receives packet, parses fields
