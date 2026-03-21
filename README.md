@@ -63,14 +63,14 @@ Install dependencies:
 pip install psutil pyserial keyboard pycaw comtypes winrt-runtime
 ```
 
-Edit `main.py` and set your COM port to whichever yours is set to:
+Edit `gui.py` and set your COM port to whichever yours is set to:
 ```python
 COM_PORT = 'COM3'
 ```
 
 Run:
 ```
-python main.py
+python gui.py
 ```
 
 > The script must be running for the display to show PC stats. It will also control media keys via the encoder.
@@ -144,7 +144,7 @@ Confirm SDA/SCL are on GPIO8/GPIO9. Confirm the display is SH1106 and not SSD130
 Check Device Manager on Windows. Make sure no other program (Arduino IDE Serial Monitor, etc.) has the port open.
 
 **Volume reads off by 1**
-Make sure you are running the latest `main.py` — an earlier version used `int()` instead of `round()` for volume scalar conversion.
+Make sure you are running the latest `gui.py` — an earlier version used `int()` instead of `round()` for volume scalar conversion.
 
 **Encoder feels jittery or skips**
 Add a 100nF ceramic capacitor between CLK and GND, and between DT and GND, right at the encoder pins. This filters electrical noise on the interrupt lines.
