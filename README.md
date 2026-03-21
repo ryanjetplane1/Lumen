@@ -143,9 +143,6 @@ Confirm SDA/SCL are on GPIO8/GPIO9. Confirm the display is SH1106 and not SSD130
 **Serial not connecting / wrong COM port**
 Check Device Manager on Windows. Make sure no other program (Arduino IDE Serial Monitor, etc.) has the port open.
 
-**Volume reads off by 1**
-Make sure you are running the latest `gui.py` — an earlier version used `int()` instead of `round()` for volume scalar conversion.
-
 **Encoder feels jittery or skips**
 Add a 100nF ceramic capacitor between CLK and GND, and between DT and GND, right at the encoder pins. This filters electrical noise on the interrupt lines.
 
