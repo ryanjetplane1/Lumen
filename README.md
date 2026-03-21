@@ -63,7 +63,7 @@ Install dependencies:
 pip install psutil pyserial keyboard pycaw comtypes winrt-runtime
 ```
 
-Edit `main.py` and set your COM port:
+Edit `main.py` and set your COM port to whichever yours is set to:
 ```python
 COM_PORT = 'COM3'
 ```
