@@ -50,7 +50,7 @@ All logic runs at **3.3V**. Do **not** use 5V — the Oled display cannot handle
 | DT (B) | **GPIO2** | Hardware interrupt pin |
 | SW (button) | **GPIO3** | |
 
-GPIO10 and GPIO2 are used for the encoder CLK and DT lines because they are reliable hardware interrupt-capable pins on the ESP32-C3 that are free from boot-strapping conflicts. GPIO9 is the BOOT button pin — avoid it for encoder use. GPIO8 is a strapping pin tied to the onboard LED — avoid pulling it low on boot.
+GPIO10 and GPIO2 are used for the encoder CLK and DT lines because they are reliable hardware interrupt-capable pins on the ESP32-C3 that are free from boot-strapping conflicts. GPIO9 is the BOOT button pin avoid it for encoder use. GPIO8 is a strapping pin tied to the onboard LED avoid pulling it low on boot.
 
 ---
 
