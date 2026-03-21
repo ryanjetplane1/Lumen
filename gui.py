@@ -40,7 +40,7 @@ async def media_task():
             session = manager.get_current_session()
             if session:
                 props = await session.try_get_media_properties_async()
-                tracker.song = props.title[:20]
+                tracker.song = props.title  # full title, no cap
                 info = session.get_playback_info()
                 tracker.prev_playing = tracker.playing
                 tracker.playing = 1 if info.playback_status == 4 else 0

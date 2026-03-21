@@ -23,10 +23,10 @@ const int pinCLK = 10;
 const int pinDT = 2;
 const int pinSW = 3;
 
-volatile int volumeChange = 0; 
+volatile int volumeChange = 0;
 int pcVolume = 0;
 unsigned long lastTickMillis = 0;
-unsigned long volDisplayTimeout = 0; 
+unsigned long volDisplayTimeout = 0;
 int currentPos = 0, totalDur = 0;
 bool isPlaying = false, pcConnected = false;
 String currentSong = "", lastSong = "";
@@ -37,11 +37,23 @@ unsigned long lastButtonPress = 0;
 int clickCount = 0;
 const int clickTimeout = 400;
 
+int scrollOffset = 0;
+unsigned long lastScrollTime = 0;
+const int SCROLL_SPEED_MS = 350;
+const int SCROLL_PAUSE_MS = 2000;
+const int MAX_VISIBLE_CHARS = 21;
+bool scrollPausing = false;
+unsigned long scrollPauseStart = 0;
+String lastScrollSong = "";
+
+unsigned long lastDisplayUpdate = 0;
+const int DISPLAY_UPDATE_MS = 50;
+
 void IRAM_ATTR readEncoder() {
   static int lastCLK = -1;
   int currentCLK = digitalRead(pinCLK);
   if (currentCLK != lastCLK && currentCLK == LOW) {
-    if (digitalRead(pinDT) == currentCLK) { volumeChange++; } 
+    if (digitalRead(pinDT) == currentCLK) { volumeChange++; }
     else { volumeChange--; }
   }
   lastCLK = currentCLK;
@@ -78,6 +90,49 @@ bool barsAllZero() {
   return true;
 }
 
+void drawScrollingSong(String song, int y) {
+  display.setTextSize(1);
+
+  if (song != lastScrollSong) {
+    scrollOffset = 0;
+    scrollPausing = true;
+    scrollPauseStart = millis();
+    lastScrollSong = song;
+  }
+
+  int songLen = song.length();
+
+  if (songLen <= MAX_VISIBLE_CHARS) {
+    display.setCursor(0, y);
+    display.print(song);
+    return;
+  }
+
+  if (scrollPausing) {
+    if (millis() - scrollPauseStart >= SCROLL_PAUSE_MS) {
+      scrollPausing = false;
+      lastScrollTime = millis();
+    }
+    display.setCursor(0, y);
+    display.print(song.substring(0, MAX_VISIBLE_CHARS));
+    return;
+  }
+
+  if (millis() - lastScrollTime >= SCROLL_SPEED_MS) {
+    scrollOffset++;
+    lastScrollTime = millis();
+    if (scrollOffset >= songLen + 3) {
+      scrollOffset = 0;
+      scrollPausing = true;
+      scrollPauseStart = millis();
+    }
+  }
+
+  String padded = song + "   " + song;
+  display.setCursor(0, y);
+  display.print(padded.substring(scrollOffset, scrollOffset + MAX_VISIBLE_CHARS));
+}
+
 void setup() {
   Serial.begin(115200);
   Wire.begin(SDA_PIN, SCL_PIN);
@@ -97,9 +152,9 @@ void setup() {
 
 void loop() {
   if (volumeChange != 0) {
-    volDisplayTimeout = millis(); 
-    if (volumeChange > 0) { for(int i=0; i<abs(volumeChange); i++) Serial.println("CW"); } 
-    else { for(int i=0; i<abs(volumeChange); i++) Serial.println("CCW"); }
+    volDisplayTimeout = millis();
+    if (volumeChange > 0) { for (int i = 0; i < abs(volumeChange); i++) Serial.println("CW"); }
+    else { for (int i = 0; i < abs(volumeChange); i++) Serial.println("CCW"); }
     volumeChange = 0;
   }
 
@@ -116,7 +171,7 @@ void loop() {
 
   if (Serial.available() > 0) {
     String data = Serial.readStringUntil('\n');
-    if (data.indexOf('|') != -1) { 
+    if (data.indexOf('|') != -1) {
       pcConnected = true;
       currentCPU  = getValue(data, '|', 0);
       currentRAM  = getValue(data, '|', 1);
@@ -129,9 +184,9 @@ void loop() {
       isPlaying   = (getValue(data, '|', 8).toInt() == 1);
       pcVolume    = getValue(data, '|', 9).toInt();
 
-      if (currentSong != lastSong || abs(incomingPos - currentPos) > 5) { 
-        currentPos = incomingPos; 
-        lastSong = currentSong; 
+      if (currentSong != lastSong || abs(incomingPos - currentPos) > 5) {
+        currentPos = incomingPos;
+        lastSong = currentSong;
       }
       for (int i = 0; i < 12; i++) {
         visualizerBars[i] = getValue(barsString, ',', i).toInt();
@@ -144,6 +199,9 @@ void loop() {
     if (currentPos < totalDur) currentPos++;
   }
 
+  if (millis() - lastDisplayUpdate < DISPLAY_UPDATE_MS) return;
+  lastDisplayUpdate = millis();
+
   display.clearDisplay();
   display.setTextColor(SH110X_WHITE);
   struct tm timeinfo;
@@ -155,13 +213,13 @@ void loop() {
     display.drawRect(10, 52, 108, 8, SH110X_WHITE);
     int volBar = map(pcVolume, 0, 100, 0, 104);
     display.fillRect(12, 54, volBar, 4, SH110X_WHITE);
-  } 
+  }
   else if (!pcConnected) {
     if (timeValid) {
       char hStr[5], mStr[5], dStr[30];
       strftime(hStr, 5, "%I", &timeinfo); strftime(mStr, 5, "%M", &timeinfo);
       strftime(dStr, 30, "%b %d", &timeinfo);
-      String finalH = String(hStr); if(finalH.startsWith("0")) finalH = finalH.substring(1);
+      String finalH = String(hStr); if (finalH.startsWith("0")) finalH = finalH.substring(1);
       drawCenteredText(finalH + ":" + String(mStr), 15, 3);
       drawCenteredText(String(dStr), 50, 1);
     }
@@ -171,15 +229,16 @@ void loop() {
     display.drawLine(0, 15, 128, 15, SH110X_WHITE);
 
     if (isPlaying || !barsAllZero()) {
-      display.setCursor(0, 20); display.print(currentSong.substring(0, 20)); 
-      display.setCursor(0, 32); display.print(formatTime(currentPos) + " / " + formatTime(totalDur));
+      drawScrollingSong(currentSong, 20);
+      display.setCursor(0, 32);
+      display.print(formatTime(currentPos) + " / " + formatTime(totalDur));
       display.drawRect(0, 42, 128, 5, SH110X_WHITE);
       if (totalDur > 0) {
         int barWidth = map(constrain(currentPos, 0, totalDur), 0, totalDur, 0, 126);
         display.fillRect(1, 43, barWidth, 3, SH110X_WHITE);
       }
       for (int i = 0; i < 12; i++) {
-        int barH = map(visualizerBars[i], 0, 32, 0, 16); 
+        int barH = map(visualizerBars[i], 0, 32, 0, 16);
         display.fillRect(i * 10 + 4, 64 - barH, 7, barH, SH110X_WHITE);
       }
     } else {
