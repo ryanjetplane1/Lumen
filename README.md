@@ -6,8 +6,8 @@ Lumen Mini is a pocket sized system monitor powered by USB-C that sits on your d
 
 ## Features
 
-- Live CPU % and RAM usage
-- Now playing track name, progress bar, and position timer
+- CPU % and RAM usage
+- Current track name, progress bar, and position timer
 - Synth visualizer
 - Clock (12-hour) when nothing is playing
 - Volume control via rotary encoder with live % overlay
@@ -21,7 +21,7 @@ Lumen Mini is a pocket sized system monitor powered by USB-C that sits on your d
 | Part | Notes |
 |---|---|
 | ESP32-C3 SuperMini | Any vendor; black PCB version |
-| 1.3" SH1106 OLED (128×64) | I2C, 4-pin — **not** the 0.96" SSD1306 |
+| 1.3" SH1106 OLED (128×64) | I2C, 4-pin **not** the 0.96" SSD1306 |
 | Rotary encoder with pushbutton | EC11 or equivalent |
 | Breadboard + jumper wires | Or solder directly |
 
