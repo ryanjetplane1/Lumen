@@ -9,8 +9,8 @@ Lumen Mini is a pocket sized system monitor powered by USB-C that sits on your d
 - CPU % and RAM usage
 - Current track name, progress bar, and position timer
 - Synth visualizer
-- Clock (12-hour) when nothing is playing
-- Volume control via rotary encoder with live % overlay
+- Clock (12-hour)
+- Volume control via rotary encoder
 - Single / double / triple click for pause, next, previous track
 - WiFi NTP clock fallback when PC is disconnected
 
