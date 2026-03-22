@@ -1,4 +1,4 @@
-![Lumen Mini](image.jpg)
+
 
 
 # Lumen Mini
@@ -6,6 +6,8 @@
 Lumen Mini is a pocket sized system monitor powered by USB-C that sits on your desk for extra functionality. Built on the ESP32, it houses a 1.3" OLED display showing CPU load, RAM usage, and whatever is playing. Complete with a prebuilt progress bar and a synth GUI the hardware can be reprogramed to fit your needs. When you reach for the volume, a rotary encoder handles it along with play, pause, and skip. When you turn off your PC, Lumen Mini fades to a simple clock.
 
 ---
+
+![Lumen Mini](image.jpg)
 
 ## Features
 
