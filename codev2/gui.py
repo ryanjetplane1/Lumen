@@ -6,6 +6,7 @@ import sys
 import threading
 import time
 import tkinter as tk
+import unicodedata
 from tkinter import ttk
 import winreg
 
@@ -27,6 +28,7 @@ ESP32_HINTS = ["CH340", "CH343", "CP210", "USB-SERIAL", "USB SERIAL", "SILICON L
 APP_NAME = "Lumen"
 OLD_APP_NAME = "Lumen SSD1306"
 SETTINGS_KEY = r"Software\Lumen"
+MAX_TEXT_LENGTH = 40
 
 
 def is_admin():
@@ -34,6 +36,23 @@ def is_admin():
         return bool(ctypes.windll.shell32.IsUserAnAdmin())
     except (AttributeError, OSError):
         return False
+
+
+def oled_text(value, fallback=""):
+    text = unicodedata.normalize("NFKD", value or "")
+    text = text.translate(str.maketrans({
+        "\u2018": "'",
+        "\u2019": "'",
+        "\u201c": '"',
+        "\u201d": '"',
+        "\u2013": "-",
+        "\u2014": "-",
+        "\u2026": "...",
+    }))
+    text = text.encode("ascii", "ignore").decode("ascii")
+    text = text.replace("|", "/").replace("\r", " ").replace("\n", " ")
+    text = "".join(character if 32 <= ord(character) <= 126 else " " for character in text)
+    return (" ".join(text.split())[:MAX_TEXT_LENGTH]) or fallback
 
 
 def get_volume_control():
@@ -198,8 +217,8 @@ class SenderWorker:
                     source = session.source_app_user_model_id.lower()
                     self.tracker.is_browser = any(name in source for name in BROWSER_SOURCES)
                     props = await session.try_get_media_properties_async()
-                    self.tracker.song = props.title[:40] if props.title else "No Music"
-                    self.tracker.artist = props.artist[:40] if props.artist else ""
+                    self.tracker.song = oled_text(props.title, "No Music") or "No Music"
+                    self.tracker.artist = oled_text(props.artist)
                     info = session.get_playback_info()
                     self.tracker.prev_playing = self.tracker.playing
                     self.tracker.playing = 1 if info.playback_status == 4 else 0
@@ -284,13 +303,16 @@ class SenderWorker:
 
         local_time = time.localtime()
         playing_out = tracker.playing if not tracker.is_browser else 0
-        return (
-            f"{self.cpu_cache}|{self.ram_cache}G|{tracker.song}|"
+        song = oled_text(tracker.song, "No Music") or "No Music"
+        artist = oled_text(tracker.artist)
+        packet = (
+            f"{self.cpu_cache}|{self.ram_cache}G|{song}|"
             f"{tracker.pos:.3f}|{tracker.dur:.3f}|"
             f"{','.join(map(str, self.h_bars))}|"
             f"{local_time.tm_hour % 12 or 12}|{local_time.tm_min:02d}|"
-            f"{playing_out}|{tracker.artist}|{current_volume}\n"
+            f"{playing_out}|{artist}|{current_volume}\n"
         )
+        return packet
 
     async def send_loop(self):
         next_tick = time.perf_counter()
@@ -302,7 +324,7 @@ class SenderWorker:
                     continue
             try:
                 self.handle_board_commands()
-                self.serial_port.write(self.build_packet().encode("utf-8"))
+                self.serial_port.write(self.build_packet().encode("ascii"))
             except (serial.SerialException, OSError, UnicodeError) as error:
                 self.status(f"Disconnected; retrying: {error}")
                 try:
